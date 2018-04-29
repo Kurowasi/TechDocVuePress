@@ -1,0 +1,20 @@
+version: "3"
+services:
+  press:
+    build: .
+    ports:
+      - '8080:8080'
+      - '3000:3000'
+    volumes:
+      - .:/home/app/press
+      - /home/app/press/node_modules
+    container_name: 'press'
+  nuxt:
+    build: ./nuxt
+    privileged: true
+    volumes:
+      - './nuxt/:/home/app/nuxt'
+      - '/home/app/nuxt/node_modules'
+    ports:
+      - '8888:3000'
+    container_name: 'nuxt'

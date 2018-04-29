@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vuex/3.0.1/vuex.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    // TODO: Replace with your project's customized code snippet
+    var config = {
+      apiKey: "Key",
+      authDomain: "Domain"
+    };
+    firebase.initializeApp(config);
+  </script>
+  <!-- 本番バージョン、サイズと速度のために最適化されています -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+  <title>Document</title>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+<script>
+  const store = new Vuex.Store({
+    state: {
+      loggedIn: false,
+      register: true,
+      editer: false
+    }
+  })
+  Vue.component('login', {
+    template: 
+      `
+        <section>
+          <h2>ログイン</h2>
+          <p>
+            <input type="text" name="email" placeholder="hoge@sample.com" v-model="email">
+          </p>
+          <p>
+            <input type="password" name="password" v-model="password">
+          </p>
+          <button @click="createAccount" v-if="createFlg">アカウント作成</button>
+          <button @click="login">ログイン</button>
+        </section>
+      `,
+    data () {
+      return {
+        email: null,
+        password: null,
+        createFlg: false
+      }
+    },
+    methods: {
+      createAccount () {
+        firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
+          .catch(err => {
+            console.log(err)
+            console.log(err.message)
+          })
+      },
+      login () {
+        firebase.auth().signInWithEmailAndPassword(this.email, this.password)
+          .then(res => {
+            // this.store.state.loggedIn = true
+            store.state.loggedIn = true
+          })
+          .catch(err => {
+            console.log(err)
+            console.log(err.message)
+          })
+      }
+    }
+  })
+  const register = Vue.component('register', {
+    template:
+      `
+        <div>
+          <h2>記事登録</h2>
+          <input type="text" v-model="title">
+          <button @click="postRegister">登録</button>
+          <textarea class="editor" v-model="description"></textarea>
+        </div>
+      `,
+    data () {
+      return {
+        title: null,
+        description: null
+      }
+    },
+    methods: {
+      postRegister () {
+        console.log(this.title, this.description)
+        $.post('http://localhost:3000/register', {
+          title: this.title,
+          description: this.description
+        })
+        .done((data) => {
+          this.title = null
+          this.description = null
+        })
+        .fail((err) => {
+          console.log(err)
+        })
+      }
+    }
+  })
+  const editer = Vue.component('editer', {
+    template:
+      `
+        <div>
+          <h2>記事編集</h2>
+          <select v-model="title" name="dir-name">
+            <option v-for="dir in dirLists">{{ dir }}</option>
+          </select>
+          <button @click="postRegister">登録</button>
+          <textarea class="editor" v-model="description"></textarea>
+        </div>
+      `,
+    data () {
+      return {
+        dirLists: null,
+        title: '',
+        description: null
+      }
+    },
+    watch: {
+      title: function(name) {
+        console.log(name)
+        $.post('http://localhost:3000/getDocument', {
+          dirName: name
+        })
+          .done((data) => {
+            this.description = data
+          })
+          .fail((err) => {
+            console.log(err)
+          })
+      }
+    },
+    created () {
+      console.log('create')
+      $.ajax('http://localhost:3000/dirLists')
+        .done((data) => {
+          this.dirLists = JSON.parse(data).dirLists
+          $.post('http://localhost:3000/getDocument', {
+            dirName: this.dirLists[0]
+          })
+            .done((data) => {
+              this.description = data
+            })
+            .fail((err) => {
+              console.log(err)
+            })
+        })
+        .fail((err) => {
+          console.log(err)
+        })
+    },
+    methods: {
+      postRegister () {
+        console.log(this.title, this.description)
+        $.post('http://localhost:3000/register-re', {
+          title: this.title,
+          description: this.description
+        })
+        .done((data) => {
+          console.log(data)
+        })
+        .fail((err) => {
+          console.log(err)
+        })
+      }
+    }
+  })
+  Vue.component('app', {
+    template:
+      `
+        <div>
+          <button @click="showRegister">記事登録</button>
+          <button @click="showEditer">記事編集</button>
+          <register v-if="register"></register>
+          <editer v-if="editer"></editer>
+        </div>
+      `,
+    computed: Vuex.mapState([
+      'register',
+      'editer'
+    ]),
+    methods: {
+      showRegister () {
+        store.state.register = true
+        store.state.editer = false
+      },
+      showEditer () {
+        store.state.editer = true
+        store.state.register = false
+      }
+    }
+  })
+  var app = new Vue({
+    el: '#app',
+    store,
+    template:
+      `
+        <div>
+          <login v-if="!loggedIn"></login>
+          <app v-if="loggedIn"></app>
+        </div>
+      `,
+    computed: Vuex.mapState(['loggedIn'])
+  })
+</script>
+
+<style>
+  .editor {
+    width: 80vw; height: 80vh;
+    margin: 0 auto;
+    border: solid 5px #000;
+    outline: none;
+  }
+</style>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "press",
+  "description": "TechnicalDocumentationPress ===============",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://ferry.kbselab.com/gitbucket/git/c1145431/TechnicalDocumentationPress.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^3.5.1",
+    "express": "^4.16.3",
+    "vuepress": "^0.7.1"
+  },
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
+    "start": "concurrently \"yarn docs:dev\" \"node index.js\""
+  }
+}

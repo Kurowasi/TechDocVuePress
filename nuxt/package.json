@@ -1,0 +1,22 @@
+{
+  "name": "nuxt",
+  "version": "1.0.0",
+  "description": "My priceless Nuxt.js project",
+  "author": "",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "@nuxtjs/vuetify": "^0.4.1",
+    "firebase": "^4.13.1",
+    "nuxt": "^1.0.0",
+    "vue-markdown": "^2.2.4"
+  },
+  "devDependencies": {
+    "cross-env": "^5.0.1"
+  }
+}
